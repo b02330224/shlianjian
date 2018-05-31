@@ -19,7 +19,7 @@ mysql_options = dict(
     password="123456"
 )
 
-sqlite3_db_file = '/opt/lianjia_scrawler/lianjia-scrawler/lianjiash.db'
+sqlite3_db_file = 'lianjiash.db'
 
 # 日志配置
 log_path = os.path.join(os.path.dirname(__file__), "logs/log")

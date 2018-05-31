@@ -14,7 +14,7 @@ from tornado.options import options, define
 from tornado.web import RequestHandler
 from utils.sqlitedb import SqliteDb
 
-define("port", default=8001, type=int, help="run server on the given port")
+define("port", default=8002, type=int, help="run server on the given port")
 
 
 class Application(tornado.web.Application):

@@ -1,4 +1,4 @@
-# coding:utf-8
+# coding=utf-8
 
 import logging
 import json
@@ -11,133 +11,22 @@ from utils.response_code import RET
 from utils.commons import required_login
 from utils.commons import ComplexEncoder
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 class HouseInfoHandler(BaseHandler):
     """房屋信息"""
-    @required_login
+
     def post(self):
-        """保存"""
-        # 获取参数
-        """{
-            "title":"",
-            "price":"",
-            "area_id":"1",
-            "address":"",
-            "room_count":"",
-            "acreage":"",
-            "unit":"",
-            "capacity":"",
-            "beds":"",
-            "deposit":"",
-            "min_days":"",
-            "max_days":"",
-            "facility":["7","8"]
-        }"""
-
-        user_id = self.session.data.get("user_id")
-        title = self.json_args.get("title")
-        price = self.json_args.get("price")
-        area_id = self.json_args.get("area_id")
-        address = self.json_args.get("address")
-        room_count = self.json_args.get("room_count")
-        acreage = self.json_args.get("acreage")
-        unit = self.json_args.get("unit")
-        capacity = self.json_args.get("capacity")
-        beds = self.json_args.get("beds")
-        deposit = self.json_args.get("deposit")
-        min_days = self.json_args.get("min_days")
-        max_days = self.json_args.get("max_days")
-        facility = self.json_args.get("facility") # 对一个房屋的设施，是列表类型
-        # 校验
-        if not all((title, price, area_id, address, room_count, acreage, unit, capacity, beds, deposit, min_days,
-                    max_days)):
-            return self.write(dict(errcode=RET.PARAMERR, errmsg="缺少参数"))
-
-        try:
-            price = int(price) * 100
-            deposit = int(deposit) * 100
-        except Exception as e:
-            return self.write(dict(errcode=RET.PARAMERR, errmsg="参数错误"))
-
-        # 数据
-        try:
-            sql = "insert into ih_house_info(hi_user_id,hi_title,hi_price,hi_area_id,hi_address,hi_room_count," \
-                  "hi_acreage,hi_house_unit,hi_capacity,hi_beds,hi_deposit,hi_min_days,hi_max_days) " \
-                  "values(%(user_id)s,%(title)s,%(price)s,%(area_id)s,%(address)s,%(room_count)s,%(acreage)s," \
-                  "%(house_unit)s,%(capacity)s,%(beds)s,%(deposit)s,%(min_days)s,%(max_days)s)"
-            # 对于insert语句，execute方法会返回最后一个自增id
-            house_id = self.db.execute(sql, user_id=user_id, title=title, price=price, area_id=area_id, address=address,
-                                       room_count=room_count, acreage=acreage, house_unit=unit, capacity=capacity,
-                                       beds=beds, deposit=deposit, min_days=min_days, max_days=max_days)
-        except Exception as e:
-            logging.error(e)
-            return self.write(dict(errcode=RET.DBERR, errmsg="save data error"))
-
-
-        # house_id = 10001
-        # facility = ["7", "8", "9", "10"]
-        #
-        # """
-        # hf_id bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
-        # hf_house_id bigint unsigned NOT NULL COMMENT '房屋id',
-        # hf_facility_id int unsigned NOT NULL COMMENT '房屋设施',
-        # hf_ctime datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-        # """
-        # hf_id    hf_house_id    hf_facility_id
-        # 1       10001           7
-        # 2       10001           8
-        # 3       10001           9
-        #
-        # sql_val = []
-        # for facility_id in facility:
-        #     sql = "insert into ih_house_facility(hf_house_id, hf_facility_id) " \
-        #           "value(%s, %s),(%s, %s),(%s, %s)"
-        #     sql_val.append(facility_id)
-        #
-        # sql_val = tuple(sql_val)
-        #     try:
-        #         self.db.execute(sql, *sql_val)
-
-
-
-
-
-        try:
-            # for fid in facility:
-            #     sql = "insert into ih_house_facility(hf_house_id,hf_facility_id) values(%s,%s)"
-            #     self.db.execute(sql, house_id, fid)
-            sql = "insert into ih_house_facility(hf_house_id,hf_facility_id) values"
-            sql_val = [] # 用来保存条目的(%s, %s)部分  最终的形式 ["(%s, %s)", "(%s, %s)"]
-            vals = []  # 用来保存的具体的绑定变量值
-            for facility_id in facility:
-                # sql += "(%s, %s)," 采用此种方式，sql语句末尾会多出一个逗号
-                sql_val.append("(%s, %s)")
-                vals.append(house_id)
-                vals.append(facility_id)
-
-            sql += ",".join(sql_val)
-            vals = tuple(vals)
-            logging.debug(sql)
-            logging.debug(vals)
-            self.db.execute(sql, *vals)
-        except Exception as e:
-            logging.error(e)
-            try:
-                self.db.execute("delete from ih_house_info where hi_house_id=%s", house_id)
-            except Exception as e:
-                logging.error(e)
-                return self.write(dict(errcode=RET.DBERR, errmsg="delete fail"))
-            else:
-                return self.write(dict(errcode=RET.DBERR, errmsg="no data save"))
-        # 返回
-        self.write(dict(errcode=RET.OK, errmsg="OK", house_id=house_id))
+        pass
 
     def get(self, community):
         """获取房屋信息"""
 
         stime = self.get_argument("stime")
         community_name = unquote(community)
-        print(community_name)
+        print(type(community_name))
 
 
 
@@ -154,6 +43,7 @@ class HouseInfoHandler(BaseHandler):
         except Exception as e:
             logging.error(e)
             return self.write(dict(errcode=RET.DBERR, errmsg="查询错误"))
+
 
         # 用户查询的可能是不存在的房屋id, 此时ret为None
         if not ret:
@@ -182,7 +72,6 @@ class HouseInfoHandler(BaseHandler):
 
 
         resp = '{"data":%s}' % (data_json)
-        # self.write(dict(errcode=RET.OK, errmsg="OK", data=data))
         self.write(resp)
 
 
@@ -198,7 +87,7 @@ class HouseTypeHandler(BaseHandler):
 
         stime = self.get_argument("stime")
         community_name = unquote(community)
-        print(community_name)
+        #print(community_name)
 
 
 
@@ -232,7 +121,6 @@ class HouseTypeHandler(BaseHandler):
 
 
         resp = '{"data":%s}' % (data_json)
-        # self.write(dict(errcode=RET.OK, errmsg="OK", data=data))
         self.write(resp)
 
 
@@ -248,7 +136,7 @@ class RentZoneHandler(BaseHandler):
         stime = self.get_argument("stime")
         etime = self.get_argument("etime")
         community_name = unquote(community)
-        print(community_name)
+        #print(community_name)
 
 
 
@@ -260,7 +148,7 @@ class RentZoneHandler(BaseHandler):
 
         try:
             ret = self.db.query(sql)
-            print("查到的数据：%s" % ret)
+            #print("查到的数据：%s" % ret)
         except Exception as e:
             logging.error(e)
             return self.write(dict(errcode=RET.DBERR, errmsg="查询错误"))
@@ -282,7 +170,6 @@ class RentZoneHandler(BaseHandler):
 
 
         resp = '{"data":%s}' % (data_json)
-        # self.write(dict(errcode=RET.OK, errmsg="OK", data=data))
         self.write(resp)
 
 
@@ -299,7 +186,7 @@ class RentInfoHandler(BaseHandler):
         stime = self.get_argument("stime")
         etime = self.get_argument("etime")
         community_name = unquote(community)
-        print(community_name)
+        #print(community_name)
 
 
 
@@ -311,7 +198,7 @@ class RentInfoHandler(BaseHandler):
 
         try:
             ret = self.db.query(sql)
-            print("查到的数据：%s" % ret)
+            #print("查到的数据：%s" % ret)
         except Exception as e:
             logging.error(e)
             return self.write(dict(errcode=RET.DBERR, errmsg="查询错误"))
@@ -337,7 +224,6 @@ class RentInfoHandler(BaseHandler):
 
 
         resp = '{"data":%s}' % (data_json)
-        # self.write(dict(errcode=RET.OK, errmsg="OK", data=data))
         self.write(resp)
 
 
@@ -355,9 +241,9 @@ class SellInfoHandler(BaseHandler):
         sort = self.get_argument("sort")
         order = self.get_argument("order")
         community_name = unquote(community)
-        print(community_name)
-        print('sort',sort)
-        print('order',order)
+        #print(community_name)
+        #print('sort',sort)
+        #print('order',order)
         if sort == u'TotalPrice':
             sort = u'totalPrice'
             sql = "select * from sellinfo where community like '%%%s%%' order by cast(%s as int) %s;" % (community_name, sort, order)
@@ -371,17 +257,17 @@ class SellInfoHandler(BaseHandler):
             sort = u'housetype'
             sql = "select * from sellinfo where community like '%%%s%%' order by %s %s;" % (community_name, sort, order)
 
-        print('sort', sort)
+        #print('sort', sort)
 
         # 查询数据库
 
         # 查询房屋基本信息
 
 
-        print("sql=%s" % sql)
+        #print("sql=%s" % sql)
         try:
             ret = self.db.query(sql)
-            print("查到的数据：%s" % ret)
+            #print("查到的数据：%s" % ret)
         except Exception as e:
             logging.error(e)
             return self.write(dict(errcode=RET.DBERR, errmsg="查询错误"))
@@ -408,12 +294,11 @@ class SellInfoHandler(BaseHandler):
             }
             sell_info_list.append(data)
 
-        print('sell_info_list=%s' % sell_info_list)
+        #print('sell_info_list=%s' % sell_info_list)
         data_json = json.dumps(sell_info_list)
 
 
         resp = '{"data":%s}' % (data_json)
-        # self.write(dict(errcode=RET.OK, errmsg="OK", data=data))
         self.write(resp)
 
 
@@ -428,7 +313,7 @@ class communityTitleHandler(BaseHandler):
         """获取房屋信息"""
 
         community_name = unquote(community)
-        print(community_name)
+        #print(community_name)
 
 
         # 查询数据库
@@ -436,10 +321,10 @@ class communityTitleHandler(BaseHandler):
         # 查询房屋基本信息
         sql = "select * from community where title like '%%%s%%'" % community_name
 
-        print("sql=%s" % sql)
+        #print("sql=%s" % sql)
         try:
             ret = self.db.query(sql)
-            print("查到的数据：%s" % ret)
+            #print("查到的数据：%s" % ret)
         except Exception as e:
             logging.error(e)
             return self.write(dict(errcode=RET.DBERR, errmsg="查询错误"))
@@ -464,12 +349,11 @@ class communityTitleHandler(BaseHandler):
             }
             community_title_list.append(data)
 
-        print('community_title_list=%s' % community_title_list)
+        #print('community_title_list=%s' % community_title_list)
         data_json = json.dumps(community_title_list)
 
 
         resp = '{"data":%s}' % (data_json)
-        # self.write(dict(errcode=RET.OK, errmsg="OK", data=data))
         self.write(resp)
 
 
@@ -485,18 +369,18 @@ class SellCountHandler(BaseHandler):
         stime = self.get_argument("stime")
         etime = self.get_argument("etime")
         community_name = unquote(community)
-        print(community_name)
-        print(type)
+        #print(community_name)
+        #print(type)
 
         # 查询数据库
 
         # 查询房屋基本信息
         sql = "select %s as type,count(*) as total from sellinfo where community like '%%%s%%' group by %s" % (type, community_name, type)
 
-        print("sql=%s" % sql)
+       # print("sql=%s" % sql)
         try:
             ret = self.db.query(sql)
-            print("查到的数据：%s" % ret)
+            #print("查到的数据：%s" % ret)
         except Exception as e:
             logging.error(e)
             return self.write(dict(errcode=RET.DBERR, errmsg="查询错误"))
@@ -514,7 +398,7 @@ class SellCountHandler(BaseHandler):
             }
             sell_count_list.append(data)
 
-        print('sell_count_list=%s' % sell_count_list)
+        #print('sell_count_list=%s' % sell_count_list)
         data_json = json.dumps(sell_count_list)
         resp = '{"data":%s}' % (data_json)
         self.write(resp)
@@ -531,17 +415,17 @@ class CommunityBizcircleInfoHandler(BaseHandler):
         """获取房屋信息"""
 
         bizcircle_name = unquote(bizcircle)
-        print(bizcircle_name)
+        #print(bizcircle_name)
 
 
         # 查询数据库
 
         # 查询房屋基本信息
         sql = "select * from community where bizcircle like '%%%s%%' " % bizcircle_name
-        print("sql=%s" % sql)
+        #print("sql=%s" % sql)
         try:
             ret = self.db.query(sql)
-            print("查到的数据：%s" % ret)
+            #print("查到的数据：%s" % ret)
         except Exception as e:
             logging.error(e)
             return self.write(dict(errcode=RET.DBERR, errmsg="查询错误"))
@@ -569,7 +453,7 @@ class CommunityBizcircleInfoHandler(BaseHandler):
             }
             bizcircle_list.append(data)
 
-        print('bizcircle_list=%s' % bizcircle_list)
+        #print('bizcircle_list=%s' % bizcircle_list)
         data_json = json.dumps(bizcircle_list)
         resp = '{"data":%s}' % (data_json)
         self.write(resp)
@@ -586,17 +470,17 @@ class BizcircleInfoHandler(BaseHandler):
         """获取房屋信息"""
         district_name = unquote(self.get_argument('district'))
 
-        print(district_name)
+        #print(district_name)
 
 
         # 查询数据库
 
         # 查询房屋基本信息
         sql = "select distinct district,bizcircle from community where district like '%%%s%%'" % district_name
-        print("sql=%s" % sql)
+        #print("sql=%s" % sql)
         try:
             ret = self.db.query(sql)
-            print("查到的数据：%s" % ret)
+            #print("查到的数据：%s" % ret)
         except Exception as e:
             logging.error(e)
             return self.write(dict(errcode=RET.DBERR, errmsg="查询错误"))
@@ -614,7 +498,7 @@ class BizcircleInfoHandler(BaseHandler):
             }
             bizcircle_list.append(data)
 
-        print('bizcircle_list=%s' % bizcircle_list)
+        #print('bizcircle_list=%s' % bizcircle_list)
         data_json = json.dumps(bizcircle_list)
         resp = '{"data":%s}' % (data_json)
         self.write(resp)
@@ -629,17 +513,17 @@ class BizcircleCommunityHandler(BaseHandler):
         """获取房屋信息"""
         bizcircle_name = unquote(self.get_argument('bizcircle'))
 
-        print(bizcircle_name)
+        #print(bizcircle_name)
 
 
         # 查询数据库
 
         # 查询房屋基本信息
         sql = "select distinct district,bizcircle from community where district like '%%%s%%'" % bizcircle_name
-        print("sql=%s" % sql)
+        #print("sql=%s" % sql)
         try:
             ret = self.db.query(sql)
-            print("查到的数据：%s" % ret)
+            #print("查到的数据：%s" % ret)
         except Exception as e:
             logging.error(e)
             return self.write(dict(errcode=RET.DBERR, errmsg="查询错误"))
@@ -657,7 +541,7 @@ class BizcircleCommunityHandler(BaseHandler):
             }
             bizcircle_list.append(data)
 
-        print('bizcircle_list=%s' % bizcircle_list)
+        #print('bizcircle_list=%s' % bizcircle_list)
         data_json = json.dumps(bizcircle_list)
         resp = '{"data":%s}' % (data_json)
         self.write(resp)

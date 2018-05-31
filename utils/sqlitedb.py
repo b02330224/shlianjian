@@ -48,18 +48,18 @@ class SqliteDb(object):
         cursor = self.conn.cursor()
         print("Opened database successfully")
 
-        #try:
-        cursor = cursor.execute(sql)
-        rs = cursor.fetchall()
-        print(type(rs))
-        print("cursor=%s" % cursor)
-        print("dir(cursor)=%s" % dir(cursor))
-        print( cursor.description)
+        try:
+            cursor = cursor.execute(sql)
+            rs = cursor.fetchall()
+            print(type(rs))
+            print("cursor=%s" % cursor)
+            print("dir(cursor)=%s" % dir(cursor))
+            print( cursor.description)
 
-        column_names = [d[0] for d in cursor.description]
-        return [Row(itertools.izip(column_names, row)) for row in rs]
-        #print("rs=%s" % rs)
+            column_names = [d[0] for d in cursor.description]
+            return [Row(itertools.izip(column_names, row)) for row in rs]
+            #print("rs=%s" % rs)
 
-        print("Operation done successfully")
-        #finally:
-        cursor.close()
+            print("Operation done successfully")
+        finally:
+            cursor.close()
