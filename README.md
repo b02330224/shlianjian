@@ -3,7 +3,7 @@
 
 ## 介绍
 这是一个查询上海小区售房租房的web网站，后台使用tornado+sqlite3，前端使用jQuery,bootstrap sb-admin template开发.
-数据是自己写的爬虫，从链家网站上爬取下来的。
+数据是自己写的爬虫，从链家网站上爬取下来的,目前只支持静安，长宁，杨浦，浦东四个区的房源信息。
 
 ## 在线演示地址：https://shlianjia.herokuapp.com
 
